@@ -32,9 +32,29 @@ class Program {
     
     // 格式化总时长
     var formattedTotalDuration: String {
-        let minutes = totalDuration / 60
-        let seconds = totalDuration % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        Self.mmss(totalDuration)
+    }
+
+    var formattedWorkDuration: String {
+        Self.mmss(workDuration)
+    }
+
+    var formattedRestDuration: String {
+        Self.mmss(restDuration)
+    }
+
+    var formattedTotalWorkDuration: String {
+        Self.mmss(workDuration * rounds)
+    }
+
+    var formattedTotalRestDuration: String {
+        Self.mmss(restDuration * max(rounds - 1, 0))
+    }
+
+    private static func mmss(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        return String(format: "%02d:%02d", minutes, remainingSeconds)
     }
 }
 

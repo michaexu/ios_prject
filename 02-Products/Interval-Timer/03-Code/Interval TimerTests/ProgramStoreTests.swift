@@ -77,6 +77,16 @@ final class ProgramStoreTests: XCTestCase {
         XCTAssertTrue(store.customPrograms.isEmpty)
     }
 
+    func testProgramFormatsDetailDurationsAsMinutesAndSeconds() {
+        let program = Program(name: "Format", workDuration: 65, restDuration: 5, rounds: 3)
+
+        XCTAssertEqual(program.formattedWorkDuration, "01:05")
+        XCTAssertEqual(program.formattedRestDuration, "00:05")
+        XCTAssertEqual(program.formattedTotalDuration, "03:25")
+        XCTAssertEqual(program.formattedTotalWorkDuration, "03:15")
+        XCTAssertEqual(program.formattedTotalRestDuration, "00:10")
+    }
+
     private func makeContainer() throws -> ModelContainer {
         let schema = Schema([Program.self, TrainingRecord.self, AppSettings.self])
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)

@@ -129,12 +129,20 @@ struct ProgramRow: View {
     let program: Program
     let action: () -> Void
     let onEdit: (() -> Void)?
-    
+    @State private var showDetail = false
+
     var body: some View {
         HStack {
             Button(action: action) {
                 rowContent
             }
+
+            Button(action: { showDetail = true }) {
+                Image(systemName: "info.circle")
+                    .font(.title3)
+                    .foregroundColor(.neonPurple)
+            }
+            .buttonStyle(.plain)
 
             if let onEdit {
                 Button(action: onEdit) {
@@ -146,6 +154,9 @@ struct ProgramRow: View {
             }
         }
         .listRowBackground(Color.backgroundLight)
+        .sheet(isPresented: $showDetail) {
+            ProgramDetailView(program: program)
+        }
     }
 
     private var rowContent: some View {
@@ -175,6 +186,126 @@ struct ProgramRow: View {
                 .foregroundColor(.neonBlue)
         }
         .padding(.vertical, Spacing.sm)
+    }
+}
+
+struct ProgramDetailView: View {
+    let program: Program
+    @Environment(\.presentationMode) var presentationMode
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color.backgroundDeep
+                    .edgesIgnoringSafeArea(.all)
+
+                ScrollView {
+                    VStack(spacing: Spacing.lg) {
+                        headerCard
+                        paramsSection
+                        summarySection
+                        metaSection
+                    }
+                    .padding(Spacing.md)
+                }
+            }
+            .navigationBarTitle("方案明细", displayMode: .inline)
+            .navigationBarItems(trailing: Button("完成") {
+                presentationMode.wrappedValue.dismiss()
+            })
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private var headerCard: some View {
+        VStack(spacing: Spacing.sm) {
+            Text(program.isPreset ? "🔥" : "🏋️")
+                .font(.system(size: 48))
+
+            Text(program.name)
+                .font(.appTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+
+            Text(program.formattedTotalDuration)
+                .font(.appSubtitle)
+                .foregroundColor(.neonBlue)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Spacing.lg)
+        .background(Color.backgroundLight)
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    private var paramsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("训练参数")
+                .font(.appSubtitle)
+                .foregroundColor(.textSecondary)
+
+            detailRow(label: "训练时间", value: program.formattedWorkDuration, color: .neonBlue)
+            detailRow(label: "休息时间", value: program.formattedRestDuration, color: .neonGreen)
+            detailRow(label: "循环次数", value: "\(program.rounds) 轮", color: .neonPurple)
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.backgroundLight)
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    private var summarySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("时长汇总")
+                .font(.appSubtitle)
+                .foregroundColor(.textSecondary)
+
+            detailRow(label: "总时长", value: program.formattedTotalDuration, color: .neonBlue)
+            detailRow(label: "总训练时间", value: program.formattedTotalWorkDuration, color: .neonBlue)
+            detailRow(label: "总休息时间", value: program.formattedTotalRestDuration, color: .neonGreen)
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.backgroundLight)
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    private var metaSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("其他信息")
+                .font(.appSubtitle)
+                .foregroundColor(.textSecondary)
+
+            detailRow(label: "方案类型", value: program.isPreset ? "预设方案" : "自定义方案", color: .textPrimary)
+
+            if !program.isPreset {
+                detailRow(label: "创建时间", value: formattedCreatedAt, color: .textPrimary)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.backgroundLight)
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    private func detailRow(label: String, value: String, color: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.appBody)
+                .foregroundColor(.textSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(.appBody)
+                .fontWeight(.semibold)
+                .foregroundColor(color)
+        }
+    }
+
+    private var formattedCreatedAt: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: program.createdAt)
     }
 }
 
