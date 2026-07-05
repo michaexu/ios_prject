@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class AppSettings {
-    static let defaultSound = "嘀嘀嘀"
+    static let defaultSound = AppSound.beep.identifier
 
     var id: UUID
     var soundEnabled: Bool

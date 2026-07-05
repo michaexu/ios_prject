@@ -5,6 +5,8 @@ import SwiftUI
 struct StatsView: View {
     @Query(sort: \TrainingRecord.date, order: .reverse) private var trainingRecords: [TrainingRecord]
 
+    init() {}
+
     private var weeklySummary: WeeklyTrainingSummary {
         WeeklyTrainingSummary(records: trainingRecords, calendar: .current, now: Date())
     }
@@ -29,7 +31,7 @@ struct StatsView: View {
                     .padding(.vertical, Spacing.md)
                 }
             }
-            .navigationBarTitle("训练统计", displayMode: .large)
+            .navigationBarTitle(AppLocalization.text("stats.title"), displayMode: .large)
         }
         .preferredColorScheme(.dark)
     }
@@ -37,7 +39,7 @@ struct StatsView: View {
     // MARK: - 本周概览
     private var weeklyOverviewSection: some View {
         VStack(spacing: Spacing.md) {
-            Text("本周概览")
+            Text(AppLocalization.text("stats.weekly_overview"))
                 .font(.appSubtitle)
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -45,13 +47,25 @@ struct StatsView: View {
             
             VStack(spacing: Spacing.sm) {
                 HStack {
-                    StatItem(icon: "🔥", title: "训练次数", value: "\(weeklySummary.sessionCount) 次")
+                    StatItem(
+                        icon: "🔥",
+                        title: AppLocalization.text("stats.label.sessions"),
+                        value: AppTextFormatters.sessionCount(weeklySummary.sessionCount)
+                    )
                     Spacer()
-                    StatItem(icon: "⏱️", title: "总时长", value: formatDuration(weeklySummary.totalDuration))
+                    StatItem(
+                        icon: "⏱️",
+                        title: AppLocalization.text("stats.label.duration"),
+                        value: AppTextFormatters.overviewDuration(weeklySummary.totalDuration)
+                    )
                 }
                 
                 HStack {
-                    StatItem(icon: "📅", title: "连续天数", value: "\(weeklySummary.currentStreakDays) 天")
+                    StatItem(
+                        icon: "📅",
+                        title: AppLocalization.text("stats.label.streak"),
+                        value: AppTextFormatters.streakDays(weeklySummary.currentStreakDays)
+                    )
                     Spacer()
                     Spacer()
                 }
@@ -66,7 +80,7 @@ struct StatsView: View {
     // MARK: - 训练趋势
     private var trendChartSection: some View {
         VStack(spacing: Spacing.md) {
-            Text("训练趋势")
+            Text(AppLocalization.text("stats.training_trend"))
                 .font(.appSubtitle)
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -74,8 +88,8 @@ struct StatsView: View {
             
             Chart(weeklySummary.dailyDurations) { item in
                 BarMark(
-                    x: .value("星期", item.weekdayLabel),
-                    y: .value("时长", item.durationMinutes)
+                    x: .value(AppLocalization.text("stats.chart.weekday"), item.weekdayLabel),
+                    y: .value(AppLocalization.text("stats.chart.duration"), item.durationMinutes)
                 )
                 .foregroundStyle(LinearGradient.primaryGradient)
                 .cornerRadius(CornerRadius.small)
@@ -94,7 +108,7 @@ struct StatsView: View {
     // MARK: - 训练历史
     private var historySection: some View {
         VStack(spacing: Spacing.md) {
-            Text("训练历史")
+            Text(AppLocalization.text("stats.history"))
                 .font(.appSubtitle)
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -106,11 +120,11 @@ struct StatsView: View {
                         .font(.system(size: 42))
                         .foregroundColor(.neonBlue)
 
-                    Text("还没有训练记录")
+                    Text(AppLocalization.text("stats.no_records_title"))
                         .font(.appBody)
                         .foregroundColor(.textPrimary)
 
-                    Text("完成一次训练后，这里会显示你的历史记录和趋势。")
+                    Text(AppLocalization.text("stats.no_records_message"))
                         .font(.appSmall)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -127,17 +141,6 @@ struct StatsView: View {
                     }
                 }
             }
-        }
-    }
-    
-    // MARK: - 格式化时长
-    private func formatDuration(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        if hours > 0 {
-            return "\(hours) 小时 \(minutes) 分"
-        } else {
-            return "\(minutes) 分钟"
         }
     }
 }
@@ -181,21 +184,21 @@ struct TrainingRecordRow: View {
                 
                 Spacer()
                 
-                Text(record.programName)
+                Text(Program.localizedName(for: record.programId, fallbackName: record.programName))
                     .font(.appBody)
                     .fontWeight(.bold)
                     .foregroundColor(.textPrimary)
             }
             
             HStack {
-                Text("\(record.completedRounds) 轮")
+                Text(AppTextFormatters.rounds(record.completedRounds))
                     .font(.appSmall)
                     .foregroundColor(.neonBlue)
                 
                 Text("·")
                     .foregroundColor(.textDisabled)
                 
-                Text("时长：\(formatDuration(record.totalDuration))")
+                Text(AppLocalization.format("stats.record_duration", formatDuration(record.totalDuration) as NSString))
                     .font(.appSmall)
                     .foregroundColor(.textSecondary)
             }
@@ -207,17 +210,11 @@ struct TrainingRecordRow: View {
     }
     
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
+        AppTextFormatters.localizedDate(date)
     }
     
     private func formatDuration(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        if minutes > 0 {
-            return String(format: "%d 分钟", minutes)
-        }
-        return String(format: "%d 秒", seconds)
+        AppTextFormatters.recordDuration(seconds)
     }
 }
 

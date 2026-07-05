@@ -20,7 +20,7 @@ struct ProgramsView: View {
                     .edgesIgnoringSafeArea(.all)
                 
                 List {
-                    Section(header: Text("我的方案").foregroundColor(.textPrimary)) {
+                    Section(header: Text(AppLocalization.text("programs.my_programs")).foregroundColor(.textPrimary)) {
                         ForEach(programStore.customPrograms) { program in
                             ProgramRow(
                                 program: program,
@@ -40,13 +40,13 @@ struct ProgramsView: View {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.neonBlue)
-                                Text("新建方案")
+                                Text(AppLocalization.text("programs.new_program"))
                                     .foregroundColor(.neonBlue)
                             }
                         }
                     }
                     
-                    Section(header: Text("预设方案").foregroundColor(.textPrimary)) {
+                    Section(header: Text(AppLocalization.text("programs.preset_programs")).foregroundColor(.textPrimary)) {
                         ForEach(programStore.presetPrograms) { program in
                             ProgramRow(
                                 program: program,
@@ -59,7 +59,7 @@ struct ProgramsView: View {
                 .listStyle(PlainListStyle())
                 .background(Color.backgroundDeep)
             }
-            .navigationBarTitle("训练方案", displayMode: .large)
+            .navigationBarTitle(AppLocalization.text("programs.title"), displayMode: .large)
             .navigationBarItems(trailing: Button(action: {
                 editingProgram = nil
                 showEditor = true
@@ -76,13 +76,13 @@ struct ProgramsView: View {
                 do {
                     try programStore.loadCustomPrograms(from: modelContext)
                 } catch {
-                    errorMessage = "无法加载训练方案。"
+                    errorMessage = AppLocalization.text("programs.load_failed")
                 }
             }
-            .alert("无法保存数据", isPresented: errorAlertBinding) {
-                Button("确定", role: .cancel) {}
+            .alert(AppLocalization.text("programs.save_failed.title"), isPresented: errorAlertBinding) {
+                Button(AppLocalization.text("common.ok"), role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "请稍后重试。")
+                Text(errorMessage ?? AppLocalization.text("common.try_again_later"))
             }
         }
         .preferredColorScheme(.dark)
@@ -97,7 +97,7 @@ struct ProgramsView: View {
             do {
                 try programStore.delete(program, from: modelContext)
             } catch {
-                errorMessage = "无法删除训练方案。"
+                errorMessage = AppLocalization.text("programs.delete_failed")
                 break
             }
         }
@@ -109,7 +109,7 @@ struct ProgramsView: View {
         do {
             try settingsStore.setLastProgramID(program.id, in: modelContext)
         } catch {
-            errorMessage = "无法保存最近使用的训练方案。"
+            errorMessage = AppLocalization.text("programs.last_program_failed")
         }
     }
 
@@ -165,19 +165,19 @@ struct ProgramRow: View {
                 .font(.title2)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(program.name)
+                Text(program.displayName)
                     .font(.appBody)
                     .fontWeight(.bold)
                     .foregroundColor(.textPrimary)
                 
-                Text("\(program.workDuration)s 训练 / \(program.restDuration)s 休息")
+                Text(AppTextFormatters.workRestSummary(work: program.workDuration, rest: program.restDuration))
                     .font(.appSmall)
                     .foregroundColor(.textSecondary)
             }
             
             Spacer()
             
-            Text("\(program.rounds) 轮")
+            Text(AppTextFormatters.rounds(program.rounds))
                 .font(.appCaption)
                 .foregroundColor(.textSecondary)
             
@@ -209,8 +209,8 @@ struct ProgramDetailView: View {
                     .padding(Spacing.md)
                 }
             }
-            .navigationBarTitle("方案明细", displayMode: .inline)
-            .navigationBarItems(trailing: Button("完成") {
+            .navigationBarTitle(AppLocalization.text("programs.detail.title"), displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppLocalization.text("common.done")) {
                 presentationMode.wrappedValue.dismiss()
             })
         }
@@ -222,7 +222,7 @@ struct ProgramDetailView: View {
             Text(program.isPreset ? "🔥" : "🏋️")
                 .font(.system(size: 48))
 
-            Text(program.name)
+            Text(program.displayName)
                 .font(.appTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
@@ -239,13 +239,13 @@ struct ProgramDetailView: View {
 
     private var paramsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("训练参数")
+            Text(AppLocalization.text("programs.detail.parameters"))
                 .font(.appSubtitle)
                 .foregroundColor(.textSecondary)
 
-            detailRow(label: "训练时间", value: program.formattedWorkDuration, color: .neonBlue)
-            detailRow(label: "休息时间", value: program.formattedRestDuration, color: .neonGreen)
-            detailRow(label: "循环次数", value: "\(program.rounds) 轮", color: .neonPurple)
+            detailRow(label: AppLocalization.text("programs.detail.work_duration"), value: program.formattedWorkDuration, color: .neonBlue)
+            detailRow(label: AppLocalization.text("programs.detail.rest_duration"), value: program.formattedRestDuration, color: .neonGreen)
+            detailRow(label: AppLocalization.text("programs.detail.rounds"), value: AppTextFormatters.rounds(program.rounds), color: .neonPurple)
         }
         .padding(Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -255,13 +255,13 @@ struct ProgramDetailView: View {
 
     private var summarySection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("时长汇总")
+            Text(AppLocalization.text("programs.detail.duration_summary"))
                 .font(.appSubtitle)
                 .foregroundColor(.textSecondary)
 
-            detailRow(label: "总时长", value: program.formattedTotalDuration, color: .neonBlue)
-            detailRow(label: "总训练时间", value: program.formattedTotalWorkDuration, color: .neonBlue)
-            detailRow(label: "总休息时间", value: program.formattedTotalRestDuration, color: .neonGreen)
+            detailRow(label: AppLocalization.text("programs.detail.total_duration"), value: program.formattedTotalDuration, color: .neonBlue)
+            detailRow(label: AppLocalization.text("programs.detail.total_work"), value: program.formattedTotalWorkDuration, color: .neonBlue)
+            detailRow(label: AppLocalization.text("programs.detail.total_rest"), value: program.formattedTotalRestDuration, color: .neonGreen)
         }
         .padding(Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -271,14 +271,18 @@ struct ProgramDetailView: View {
 
     private var metaSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("其他信息")
+            Text(AppLocalization.text("programs.detail.other_info"))
                 .font(.appSubtitle)
                 .foregroundColor(.textSecondary)
 
-            detailRow(label: "方案类型", value: program.isPreset ? "预设方案" : "自定义方案", color: .textPrimary)
+            detailRow(
+                label: AppLocalization.text("programs.detail.program_type"),
+                value: AppLocalization.text(program.isPreset ? "program.type.preset" : "program.type.custom"),
+                color: .textPrimary
+            )
 
             if !program.isPreset {
-                detailRow(label: "创建时间", value: formattedCreatedAt, color: .textPrimary)
+                detailRow(label: AppLocalization.text("programs.detail.created_at"), value: formattedCreatedAt, color: .textPrimary)
             }
         }
         .padding(Spacing.md)
@@ -303,9 +307,7 @@ struct ProgramDetailView: View {
     }
 
     private var formattedCreatedAt: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        return formatter.string(from: program.createdAt)
+        AppTextFormatters.localizedDateTime(program.createdAt)
     }
 }
 
@@ -328,17 +330,17 @@ struct ProgramEditorView: View {
                 ScrollView {
                     VStack(spacing: Spacing.lg) {
                         VStack(alignment: .leading, spacing: Spacing.sm) {
-                            Text("方案名称")
+                            Text(AppLocalization.text("programs.editor.name"))
                                 .font(.appCaption)
                                 .foregroundColor(.textSecondary)
                             
-                            TextField("输入方案名称...", text: $name)
+                            TextField(AppLocalization.text("programs.editor.placeholder"), text: $name)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .colorScheme(.dark)
                         }
                         
-                        TimeSelector(title: "训练时间", duration: $workDuration)
-                        TimeSelector(title: "休息时间", duration: $restDuration)
+                        TimeSelector(title: AppLocalization.text("programs.editor.work_time"), duration: $workDuration)
+                        TimeSelector(title: AppLocalization.text("programs.editor.rest_time"), duration: $restDuration)
                         RoundSelector(rounds: $rounds)
                         PreviewCard(workDuration: workDuration, restDuration: restDuration, rounds: rounds)
                         
@@ -347,12 +349,15 @@ struct ProgramEditorView: View {
                     .padding(Spacing.md)
                 }
             }
-            .navigationBarTitle(program == nil ? "新建方案" : "编辑方案", displayMode: .inline)
+            .navigationBarTitle(
+                program == nil ? AppLocalization.text("programs.editor.new_title") : AppLocalization.text("programs.editor.edit_title"),
+                displayMode: .inline
+            )
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button(AppLocalization.text("common.cancel")) {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("保存") {
+                trailing: Button(AppLocalization.text("common.save")) {
                     saveProgram()
                 }
             )
@@ -366,10 +371,10 @@ struct ProgramEditorView: View {
                 rounds = program.rounds
             }
         }
-        .alert("无法保存训练方案", isPresented: errorAlertBinding) {
-            Button("确定", role: .cancel) {}
+        .alert(AppLocalization.text("programs.editor.save_failed.title"), isPresented: errorAlertBinding) {
+            Button(AppLocalization.text("common.ok"), role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "请稍后重试。")
+            Text(errorMessage ?? AppLocalization.text("common.try_again_later"))
         }
     }
     
@@ -388,7 +393,7 @@ struct ProgramEditorView: View {
             try onSave(savedProgram)
             presentationMode.wrappedValue.dismiss()
         } catch {
-            errorMessage = "训练方案未能保存。"
+            errorMessage = AppLocalization.text("programs.editor.save_failed.message")
         }
     }
 
@@ -452,7 +457,7 @@ struct RoundSelector: View {
     
     var body: some View {
         VStack {
-            Text("循环次数")
+            Text(AppLocalization.text("programs.editor.rounds"))
                 .font(.appCaption)
                 .foregroundColor(.textSecondary)
             
@@ -490,25 +495,25 @@ struct PreviewCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("预览")
+            Text(AppLocalization.text("programs.editor.preview"))
                 .font(.appCaption)
                 .foregroundColor(.textSecondary)
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
-                    Text("总时长：")
+                    Text(AppLocalization.text("programs.preview.total_duration"))
                     Text(formatTotalDuration())
                         .foregroundColor(.neonBlue)
                 }
                 
                 HStack {
-                    Text("训练：")
+                    Text(AppLocalization.text("programs.preview.total_work"))
                     Text("\(formatSeconds(workDuration * rounds))")
                         .foregroundColor(.neonBlue)
                 }
                 
                 HStack {
-                    Text("休息：")
+                    Text(AppLocalization.text("programs.preview.total_rest"))
                     Text("\(formatSeconds(restDuration * (rounds - 1)))")
                         .foregroundColor(.neonGreen)
                 }
@@ -528,9 +533,7 @@ struct PreviewCard: View {
     }
     
     private func formatSeconds(_ seconds: Int) -> String {
-        let mins = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%d 分钟 %d 秒", mins, secs)
+        AppTextFormatters.previewDuration(seconds)
     }
 }
 

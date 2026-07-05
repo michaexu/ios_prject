@@ -35,13 +35,22 @@ final class TrainingInsightsTests: XCTestCase {
             makeRecord(on: priorWeek, duration: 1200)
         ]
 
-        let summary = WeeklyTrainingSummary(records: records, calendar: calendar, now: now)
+        let summary = WeeklyTrainingSummary(records: records, calendar: calendar, now: now, preferredLanguages: ["zh-Hans"])
 
         XCTAssertEqual(summary.sessionCount, 3)
         XCTAssertEqual(summary.totalDuration, 1800)
         XCTAssertEqual(summary.currentStreakDays, 1)
         XCTAssertEqual(summary.dailyDurations.map(\.weekdayLabel), ["一", "二", "三", "四", "五", "六", "日"])
         XCTAssertEqual(summary.dailyDurations.map(\.durationSeconds), [600, 0, 300, 0, 0, 0, 900])
+    }
+
+    func testWeeklySummaryLocalizesWeekdayLabelsForResolvedLanguage() {
+        let calendar = makeCalendar()
+        let now = makeDate(year: 2026, month: 7, day: 9, hour: 12, calendar: calendar)
+
+        let summary = WeeklyTrainingSummary(records: [], calendar: calendar, now: now, preferredLanguages: ["en-US"])
+
+        XCTAssertEqual(summary.dailyDurations.map(\.weekdayLabel), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
     }
 
     private func makeCalendar() -> Calendar {

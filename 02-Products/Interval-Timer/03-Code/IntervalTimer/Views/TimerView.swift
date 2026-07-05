@@ -12,32 +12,32 @@ struct TimerScreenPresentation: Equatable {
     static func content(for sessionState: TimerSessionState) -> TimerScreenPresentation {
         switch sessionState {
         case .ready:
-            return TimerScreenPresentation(title: "准备开始", primarySymbol: "play.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.ready"), primarySymbol: "play.circle.fill", accentColor: .neonBlue)
         case .running(.work):
-            return TimerScreenPresentation(title: "训练中", primarySymbol: "pause.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.running_work"), primarySymbol: "pause.circle.fill", accentColor: .neonBlue)
         case .running(.rest):
-            return TimerScreenPresentation(title: "休息中", primarySymbol: "pause.circle.fill", accentColor: .neonGreen)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.running_rest"), primarySymbol: "pause.circle.fill", accentColor: .neonGreen)
         case .paused(.rest):
-            return TimerScreenPresentation(title: "已暂停", primarySymbol: "play.circle.fill", accentColor: .neonGreen)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.paused"), primarySymbol: "play.circle.fill", accentColor: .neonGreen)
         case .paused(.work):
-            return TimerScreenPresentation(title: "已暂停", primarySymbol: "play.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.paused"), primarySymbol: "play.circle.fill", accentColor: .neonBlue)
         case .completed:
-            return TimerScreenPresentation(title: "已完成", primarySymbol: "arrow.clockwise.circle.fill", accentColor: .neonGreen)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.completed"), primarySymbol: "arrow.clockwise.circle.fill", accentColor: .neonGreen)
         }
     }
 
     static func content(for state: TimerState) -> TimerScreenPresentation {
         switch state {
         case .idle:
-            return TimerScreenPresentation(title: "准备开始", primarySymbol: "play.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.ready"), primarySymbol: "play.circle.fill", accentColor: .neonBlue)
         case .work:
-            return TimerScreenPresentation(title: "训练中", primarySymbol: "pause.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.running_work"), primarySymbol: "pause.circle.fill", accentColor: .neonBlue)
         case .rest:
-            return TimerScreenPresentation(title: "休息中", primarySymbol: "pause.circle.fill", accentColor: .neonGreen)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.running_rest"), primarySymbol: "pause.circle.fill", accentColor: .neonGreen)
         case .paused:
-            return TimerScreenPresentation(title: "已暂停", primarySymbol: "play.circle.fill", accentColor: .neonBlue)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.paused"), primarySymbol: "play.circle.fill", accentColor: .neonBlue)
         case .completed:
-            return TimerScreenPresentation(title: "已完成", primarySymbol: "arrow.clockwise.circle.fill", accentColor: .neonGreen)
+            return TimerScreenPresentation(title: AppLocalization.text("timer.completed"), primarySymbol: "arrow.clockwise.circle.fill", accentColor: .neonGreen)
         }
     }
 }
@@ -125,7 +125,7 @@ private struct ActiveTimerContent: View {
 
             Spacer()
 
-            Text(program.name)
+            Text(program.displayName)
                 .font(.appBody)
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
@@ -167,7 +167,7 @@ private struct ActiveTimerContent: View {
                     .fontWeight(.bold)
                     .foregroundColor(.textPrimary)
 
-                Text("第 \(timerManager.currentRound) 轮 / 共 \(timerManager.totalRounds) 轮")
+                Text(AppTextFormatters.roundProgress(current: timerManager.currentRound, total: timerManager.totalRounds))
                     .font(.appCaption)
                     .foregroundColor(.textSecondary)
             }
@@ -191,7 +191,7 @@ private struct ActiveTimerContent: View {
             }
 
             Button(action: onStop) {
-                Text("停止")
+                Text(AppLocalization.text("timer.stop"))
                     .font(.appBody)
                     .foregroundColor(.alertRed)
             }
@@ -222,11 +222,11 @@ private struct EmptyTimerState: View {
                 .font(.system(size: 56))
                 .foregroundColor(.neonBlue)
 
-            Text("还没有开始训练")
+            Text(AppLocalization.text("timer.empty_title"))
                 .font(.appTitle)
                 .foregroundColor(.textPrimary)
 
-            Text("从首页或方案页选择一个训练方案开始。")
+            Text(AppLocalization.text("timer.empty_message"))
                 .font(.appBody)
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)

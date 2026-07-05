@@ -42,35 +42,35 @@ struct MainTabView: View {
                 .tag(AppTab.home)
                 .tabItem {
                     Image(systemName: "house.fill")
-                    Text("首页")
+                    Text(AppLocalization.text("tabs.home"))
                 }
             
             TimerView()
                 .tag(AppTab.timer)
                 .tabItem {
                     Image(systemName: "timer")
-                    Text("计时器")
+                    Text(AppLocalization.text("tabs.timer"))
                 }
             
             ProgramsView()
                 .tag(AppTab.programs)
                 .tabItem {
                     Image(systemName: "list.bullet")
-                    Text("方案")
+                    Text(AppLocalization.text("tabs.programs"))
                 }
             
             StatsView()
                 .tag(AppTab.stats)
                 .tabItem {
                     Image(systemName: "chart.bar.fill")
-                    Text("统计")
+                    Text(AppLocalization.text("tabs.stats"))
                 }
             
             SettingsView()
                 .tag(AppTab.settings)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
-                    Text("设置")
+                    Text(AppLocalization.text("tabs.settings"))
                 }
         }
         .accentColor(.neonBlue)
@@ -92,15 +92,15 @@ struct MainTabView: View {
                     appSession.restoreLastSelectedProgram(program)
                 }
             } catch {
-                bootstrapErrorMessage = "无法恢复上次使用的训练方案。"
+                bootstrapErrorMessage = AppLocalization.text("app.restore_failed.message")
             }
         }
-        .alert("启动恢复失败", isPresented: bootstrapErrorAlertBinding) {
-            Button("确定", role: .cancel) {
+        .alert(AppLocalization.text("app.restore_failed.title"), isPresented: bootstrapErrorAlertBinding) {
+            Button(AppLocalization.text("common.ok"), role: .cancel) {
                 bootstrapErrorMessage = nil
             }
         } message: {
-            Text(bootstrapErrorMessage ?? "请稍后重试。")
+            Text(bootstrapErrorMessage ?? AppLocalization.text("common.try_again_later"))
         }
     }
 

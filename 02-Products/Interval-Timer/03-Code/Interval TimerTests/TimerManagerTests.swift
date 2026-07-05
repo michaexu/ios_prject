@@ -88,7 +88,7 @@ final class TimerManagerTests: XCTestCase {
 
         XCTAssertFalse(manager.soundEnabled)
         XCTAssertFalse(manager.vibrationEnabled)
-        XCTAssertEqual(manager.selectedSound, "Bell")
+        XCTAssertEqual(manager.selectedSound, AppSound.beep.identifier)
         XCTAssertFalse(idleStates.last ?? false)
 
         manager.start()

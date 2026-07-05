@@ -12,6 +12,8 @@ struct HomeView: View {
     @Query(sort: \TrainingRecord.date, order: .reverse) private var records: [TrainingRecord]
     @State private var errorMessage: String?
 
+    init() {}
+
     private var quickStartProgram: Program {
         if let lastProgramID = settingsStore.lastProgramID,
            let program = programStore.program(withID: lastProgramID) {
@@ -40,15 +42,15 @@ struct HomeView: View {
                     .padding(.vertical, Spacing.md)
                 }
             }
-            .navigationBarTitle("Interval Timer", displayMode: .large)
+            .navigationBarTitle(AppLocalization.text("home.title"), displayMode: .large)
             .navigationBarItems(trailing: NavigationLink(destination: SettingsView()) {
                 Image(systemName: "gearshape.fill")
                     .foregroundColor(.neonBlue)
             })
-            .alert("无法保存设置", isPresented: errorAlertBinding) {
-                Button("确定", role: .cancel) {}
+            .alert(AppLocalization.text("home.save_settings_failed.title"), isPresented: errorAlertBinding) {
+                Button(AppLocalization.text("common.ok"), role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "请稍后重试。")
+                Text(errorMessage ?? AppLocalization.text("common.try_again_later"))
             }
         }
         .preferredColorScheme(.dark)
@@ -56,18 +58,18 @@ struct HomeView: View {
     
     private var quickStartSection: some View {
         VStack(spacing: Spacing.md) {
-            Text("快速开始：\(quickStartProgram.name)")
+            Text(AppLocalization.format("home.quick_start", quickStartProgram.displayName))
                 .font(.appSubtitle)
                 .foregroundColor(.textSecondary)
             
-            Text("\(quickStartProgram.workDuration)s 训练 / \(quickStartProgram.restDuration)s 休息")
+            Text(AppTextFormatters.workRestSummary(work: quickStartProgram.workDuration, rest: quickStartProgram.restDuration))
                 .font(.appCaption)
                 .foregroundColor(.textSecondary)
             
             Button(action: {
                 startProgram(quickStartProgram)
             }) {
-                Text("🎯 开始训练")
+                Text(AppLocalization.text("home.start_training"))
                     .font(.appTitle)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
@@ -83,7 +85,7 @@ struct HomeView: View {
     
     private var presetProgramsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("预设训练方案")
+            Text(AppLocalization.text("home.preset_programs"))
                 .font(.appSubtitle)
                 .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.md)
@@ -103,18 +105,30 @@ struct HomeView: View {
     
     private var todayStatsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("今日训练统计")
+            Text(AppLocalization.text("home.today_stats"))
                 .font(.appSubtitle)
                 .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.md)
 
             HStack(spacing: Spacing.md) {
-                StatCard(icon: "🔥", title: "\(todaySummary.sessionCount) 次", subtitle: "训练次数")
-                StatCard(icon: "⏱️", title: formatDuration(todaySummary.totalDuration), subtitle: "训练时长")
+                StatCard(
+                    icon: "🔥",
+                    title: AppTextFormatters.sessionCount(todaySummary.sessionCount),
+                    subtitle: AppLocalization.text("stats.label.sessions")
+                )
+                StatCard(
+                    icon: "⏱️",
+                    title: AppTextFormatters.overviewDuration(todaySummary.totalDuration),
+                    subtitle: AppLocalization.text("stats.label.duration")
+                )
             }
             
             HStack(spacing: Spacing.md) {
-                StatCard(icon: "📅", title: "\(todaySummary.currentStreakDays) 天", subtitle: "连续训练")
+                StatCard(
+                    icon: "📅",
+                    title: AppTextFormatters.streakDays(todaySummary.currentStreakDays),
+                    subtitle: AppLocalization.text("stats.label.streak")
+                )
             }
         }
         .padding(.horizontal, Spacing.md)
@@ -126,23 +140,8 @@ struct HomeView: View {
         do {
             try settingsStore.setLastProgramID(program.id, in: modelContext)
         } catch {
-            errorMessage = "无法保存最近使用的训练方案。"
+            errorMessage = AppLocalization.text("home.save_settings_failed.last_program")
         }
-    }
-
-    private func formatDuration(_ seconds: Int) -> String {
-        if seconds == 0 {
-            return "0 分钟"
-        }
-
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-
-        if hours > 0 {
-            return "\(hours) 小时 \(minutes) 分"
-        }
-
-        return "\(max(minutes, 1)) 分钟"
     }
 
     private var errorAlertBinding: Binding<Bool> {
@@ -164,16 +163,16 @@ struct ProgramCard: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text(program.name)
+                Text(program.displayName)
                     .font(.appBody)
                     .fontWeight(.bold)
                     .foregroundColor(.textPrimary)
                 
-                Text("\(program.workDuration)s")
+                Text(AppTextFormatters.workRestSummary(work: program.workDuration, rest: program.restDuration))
                     .font(.appSmall)
                     .foregroundColor(.neonBlue)
                 
-                Text("\(program.rounds) 轮")
+                Text(AppTextFormatters.rounds(program.rounds))
                     .font(.appSmall)
                     .foregroundColor(.textSecondary)
             }

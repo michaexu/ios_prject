@@ -51,6 +51,22 @@ class Program {
         Self.mmss(restDuration * max(rounds - 1, 0))
     }
 
+    var displayName: String {
+        displayName(preferredLanguages: Locale.preferredLanguages)
+    }
+
+    func displayName(preferredLanguages: [String] = Locale.preferredLanguages) -> String {
+        guard let localizationKey = presetLocalizationKey else {
+            return name
+        }
+
+        return AppLocalization.text(localizationKey, preferredLanguages: preferredLanguages)
+    }
+
+    private var presetLocalizationKey: String? {
+        Self.presetLocalizationKey(for: id)
+    }
+
     private static func mmss(_ seconds: Int) -> String {
         let minutes = seconds / 60
         let remainingSeconds = seconds % 60
@@ -78,12 +94,41 @@ extension Program {
         )
     }
 
+    static func localizedName(
+        for programID: UUID,
+        fallbackName: String,
+        preferredLanguages: [String] = Locale.preferredLanguages
+    ) -> String {
+        guard let presetProgram = presetPrograms.first(where: { $0.id == programID }) else {
+            return fallbackName
+        }
+
+        return presetProgram.displayName(preferredLanguages: preferredLanguages)
+    }
+
+    private static func presetLocalizationKey(for id: UUID) -> String? {
+        switch id.uuidString.uppercased() {
+        case "00000000-0000-0000-0000-000000000001":
+            return "preset.tabata"
+        case "00000000-0000-0000-0000-000000000002":
+            return "preset.seven_minute"
+        case "00000000-0000-0000-0000-000000000003":
+            return "preset.beginner_hiit"
+        case "00000000-0000-0000-0000-000000000004":
+            return "preset.advanced_hiit"
+        case "00000000-0000-0000-0000-000000000005":
+            return "preset.custom"
+        default:
+            return nil
+        }
+    }
+
     static let presetPrograms: [Program] = [
         preset(id: "00000000-0000-0000-0000-000000000001", name: "Tabata", workDuration: 20, restDuration: 10, rounds: 8),
-        preset(id: "00000000-0000-0000-0000-000000000002", name: "7分钟训练", workDuration: 30, restDuration: 10, rounds: 12),
-        preset(id: "00000000-0000-0000-0000-000000000003", name: "HIIT 初级", workDuration: 45, restDuration: 15, rounds: 10),
-        preset(id: "00000000-0000-0000-0000-000000000004", name: "HIIT 高级", workDuration: 60, restDuration: 20, rounds: 15),
-        preset(id: "00000000-0000-0000-0000-000000000005", name: "自定义", workDuration: 30, restDuration: 30, rounds: 5)
+        preset(id: "00000000-0000-0000-0000-000000000002", name: "7-Minute Workout", workDuration: 30, restDuration: 10, rounds: 12),
+        preset(id: "00000000-0000-0000-0000-000000000003", name: "Beginner HIIT", workDuration: 45, restDuration: 15, rounds: 10),
+        preset(id: "00000000-0000-0000-0000-000000000004", name: "Advanced HIIT", workDuration: 60, restDuration: 20, rounds: 15),
+        preset(id: "00000000-0000-0000-0000-000000000005", name: "Custom", workDuration: 30, restDuration: 30, rounds: 5)
     ]
 }
 

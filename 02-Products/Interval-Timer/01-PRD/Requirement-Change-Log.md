@@ -44,6 +44,56 @@
 
 ---
 
+### [REQ-002] 全球多语言版本支持
+- **日期**：2026-07-05
+- **类型**：修改功能
+- **提出人**：马欣妍
+- **优先级**：P1
+- **状态**：已完成
+
+#### 需求描述
+
+Interval Timer 将面向全球 App 市场发布，需要将应用改为多语言版本，默认语言为英文，并覆盖主流市场常用语言。多语言不仅包括界面文案，还应确保预设训练方案名称、提醒音名称、统计信息、设置项和发布所需的语言声明保持一致。
+
+#### 验收标准
+
+1. 默认显示英文文案
+2. 支持以下语言：
+   - English (`en`)
+   - 简体中文 (`zh-Hans`)
+   - 繁體中文 (`zh-Hant`)
+   - 日本語 (`ja`)
+   - 한국어 (`ko`)
+   - Français (`fr`)
+   - Deutsch (`de`)
+   - Español (`es`)
+   - Português (Brasil) (`pt-BR`)
+   - Italiano (`it`)
+   - Русский (`ru`)
+   - العربية (`ar`)
+3. 首页、计时器、方案、统计、设置、隐私政策等核心页面全部完成本地化
+4. 预设训练方案名称按当前语言展示，自定义方案名称保持用户输入
+5. 提醒音配置使用稳定 ID 存储，兼容旧版本中文音效名称
+6. 工程声明支持上述语言，满足 App Store 发布所需的本地化识别
+
+#### 影响范围
+
+- `03-Code/IntervalTimer/Utilities/AppLocalization.swift` — 新增应用级本地化读取与格式化能力
+- `03-Code/IntervalTimer/Resources/AppLocalizations.json` — 新增 12 种语言文案资源
+- `03-Code/IntervalTimer/Models/Program.swift` — 预设方案稳定命名与多语言显示
+- `03-Code/IntervalTimer/Models/AppSettings.swift`、`ViewModels/AppSettingsStore.swift`、`ViewModels/TimerManager.swift` — 提醒音稳定 ID 与旧值兼容
+- `03-Code/IntervalTimer/Views/*.swift` — 核心界面统一切换为本地化文案
+- `03-Code/IntervalTimer.xcodeproj/project.pbxproj`、`03-Code/IntervalTimer/*.lproj/InfoPlist.strings` — 补充语言声明与最小本地化发布资源
+
+#### 完成说明
+
+- 已完成英文默认语言和 11 种附加主流语言支持
+- 已完成预设方案名称、提醒音名称、周维度统计标签的多语言展示
+- 已完成旧版中文提醒音持久化值到稳定 ID 的兼容迁移
+- 已补充工程语言区域声明与 `InfoPlist.strings` 本地化文件，用于发布识别
+
+---
+
 <!-- 后续需求变更按以下模板追加 -->
 
 <!--

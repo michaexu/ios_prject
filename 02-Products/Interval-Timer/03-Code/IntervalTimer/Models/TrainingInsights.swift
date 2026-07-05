@@ -30,7 +30,12 @@ struct WeeklyTrainingSummary: Equatable {
     let currentStreakDays: Int
     let dailyDurations: [WeeklyTrainingDay]
 
-    init(records: [TrainingRecord], calendar: Calendar, now: Date) {
+    init(
+        records: [TrainingRecord],
+        calendar: Calendar,
+        now: Date,
+        preferredLanguages: [String] = Locale.preferredLanguages
+    ) {
         let weekStart = calendar.startOfWeek(containing: now)
         let weekDays = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
         let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? now
@@ -40,7 +45,9 @@ struct WeeklyTrainingSummary: Equatable {
         totalDuration = weeklyRecords.reduce(0) { $0 + $1.totalDuration }
         currentStreakDays = TrainingStreakCalculator.currentStreakDays(records: records, calendar: calendar)
 
-        dailyDurations = zip(weekDays, WeeklyTrainingDay.weekdayLabels).map { day, label in
+        let weekdayLabels = AppLocalization.weekdaySymbolsMondayFirst(preferredLanguages: preferredLanguages)
+
+        dailyDurations = zip(weekDays, weekdayLabels).map { day, label in
             let duration = weeklyRecords
                 .filter { calendar.isDate($0.date, inSameDayAs: day) }
                 .reduce(0) { $0 + $1.totalDuration }
@@ -50,8 +57,6 @@ struct WeeklyTrainingSummary: Equatable {
 }
 
 struct WeeklyTrainingDay: Identifiable, Equatable {
-    static let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
-
     let weekdayLabel: String
     let durationSeconds: Int
     let date: Date

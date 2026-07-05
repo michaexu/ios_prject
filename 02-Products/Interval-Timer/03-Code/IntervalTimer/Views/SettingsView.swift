@@ -16,13 +16,13 @@ struct SettingsView: View {
                     .edgesIgnoringSafeArea(.all)
                 
                 List {
-                    Section(header: Text("提醒设置").foregroundColor(.textPrimary)) {
+                    Section(header: Text(AppLocalization.text("settings.reminders")).foregroundColor(.textPrimary)) {
                         Toggle(isOn: soundBinding) {
                             HStack {
                                 Image(systemName: "speaker.wave.2.fill")
                                     .foregroundColor(.neonBlue)
                                     .frame(width: 24)
-                                Text("声音提醒")
+                                Text(AppLocalization.text("settings.sound"))
                                     .foregroundColor(.textPrimary)
                             }
                         }
@@ -33,7 +33,7 @@ struct SettingsView: View {
                                 Image(systemName: "iphone.radiowaves.left.and.right")
                                     .foregroundColor(.neonGreen)
                                     .frame(width: 24)
-                                Text("震动提醒")
+                                Text(AppLocalization.text("settings.vibration"))
                                     .foregroundColor(.textPrimary)
                             }
                         }
@@ -44,10 +44,10 @@ struct SettingsView: View {
                                 Image(systemName: "music.note")
                                     .foregroundColor(.neonPurple)
                                     .frame(width: 24)
-                                Text("提示音")
+                                Text(AppLocalization.text("settings.sound_selection"))
                                     .foregroundColor(.textPrimary)
                                 Spacer()
-                                Text(settingsStore.selectedSound)
+                                Text(AppSound.displayName(for: settingsStore.selectedSound))
                                     .foregroundColor(.textSecondary)
                                 Image(systemName: "chevron.right")
                                     .foregroundColor(.textDisabled)
@@ -56,13 +56,13 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.backgroundLight)
                     
-                    Section(header: Text("显示设置").foregroundColor(.textPrimary)) {
+                    Section(header: Text(AppLocalization.text("settings.display")).foregroundColor(.textPrimary)) {
                         Toggle(isOn: screenAlwaysOnBinding) {
                             HStack {
                                 Image(systemName: "display")
                                     .foregroundColor(.neonBlue)
                                     .frame(width: 24)
-                                Text("屏幕常亮")
+                                Text(AppLocalization.text("settings.screen_awake"))
                                     .foregroundColor(.textPrimary)
                             }
                         }
@@ -70,12 +70,12 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.backgroundLight)
                     
-                    Section(header: Text("关于").foregroundColor(.textPrimary)) {
+                    Section(header: Text(AppLocalization.text("settings.about")).foregroundColor(.textPrimary)) {
                         HStack {
                             Image(systemName: "info.circle")
                                 .foregroundColor(.neonBlue)
                                 .frame(width: 24)
-                            Text("版本")
+                            Text(AppLocalization.text("settings.version"))
                                 .foregroundColor(.textPrimary)
                             Spacer()
                             Text("1.0.0")
@@ -87,7 +87,7 @@ struct SettingsView: View {
                                 Image(systemName: "lock.shield")
                                     .foregroundColor(.neonGreen)
                                     .frame(width: 24)
-                                Text("隐私政策")
+                                Text(AppLocalization.text("settings.privacy_policy"))
                                     .foregroundColor(.textPrimary)
                             }
                         }
@@ -97,18 +97,18 @@ struct SettingsView: View {
                 .listStyle(PlainListStyle())
                 .background(Color.backgroundDeep)
             }
-            .navigationBarTitle("设置", displayMode: .large)
+            .navigationBarTitle(AppLocalization.text("settings.title"), displayMode: .large)
             .task {
                 do {
                     try settingsStore.load(from: modelContext)
                 } catch {
-                    errorMessage = "无法加载设置。"
+                    errorMessage = AppLocalization.text("settings.load_failed")
                 }
             }
-            .alert("无法保存设置", isPresented: errorAlertBinding) {
-                Button("确定", role: .cancel) {}
+            .alert(AppLocalization.text("settings.save_failed.title"), isPresented: errorAlertBinding) {
+                Button(AppLocalization.text("common.ok"), role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "请稍后重试。")
+                Text(errorMessage ?? AppLocalization.text("common.try_again_later"))
             }
         }
         .preferredColorScheme(.dark)
@@ -121,7 +121,7 @@ struct SettingsView: View {
                 do {
                     try settingsStore.setSoundEnabled(newValue, in: modelContext)
                 } catch {
-                    errorMessage = "声音提醒设置未能保存。"
+                    errorMessage = AppLocalization.text("settings.save_failed.sound")
                 }
             }
         )
@@ -134,7 +134,7 @@ struct SettingsView: View {
                 do {
                     try settingsStore.setVibrationEnabled(newValue, in: modelContext)
                 } catch {
-                    errorMessage = "震动提醒设置未能保存。"
+                    errorMessage = AppLocalization.text("settings.save_failed.vibration")
                 }
             }
         )
@@ -147,7 +147,7 @@ struct SettingsView: View {
                 do {
                     try settingsStore.setScreenAlwaysOn(newValue, in: modelContext)
                 } catch {
-                    errorMessage = "屏幕常亮设置未能保存。"
+                    errorMessage = AppLocalization.text("settings.save_failed.screen")
                 }
             }
         )
@@ -169,7 +169,7 @@ struct SoundSelectionView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @Environment(\.modelContext) private var modelContext
     @State private var errorMessage: String?
-    let sounds = ["嘀嘀嘀", "叮叮叮", "嘟嘟嘟"]
+    let sounds = AppSound.allCases
     
     var body: some View {
         ZStack {
@@ -177,21 +177,21 @@ struct SoundSelectionView: View {
                 .edgesIgnoringSafeArea(.all)
             
             List {
-                ForEach(0..<sounds.count, id: \.self) { index in
+                ForEach(sounds, id: \.identifier) { sound in
                     Button(action: {
                         do {
-                            try settingsStore.setSelectedSound(sounds[index], in: modelContext)
+                            try settingsStore.setSelectedSound(sound.identifier, in: modelContext)
                         } catch {
-                            errorMessage = "提示音设置未能保存。"
+                            errorMessage = AppLocalization.text("settings.save_failed.sound_selection")
                         }
                     }) {
                         HStack {
-                            Text(sounds[index])
+                            Text(AppLocalization.text(sound.localizationKey))
                                 .foregroundColor(.textPrimary)
                             
                             Spacer()
                             
-                            if settingsStore.selectedSound == sounds[index] {
+                            if settingsStore.selectedSound == sound.identifier {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.neonBlue)
                             }
@@ -203,19 +203,19 @@ struct SoundSelectionView: View {
             .listStyle(PlainListStyle())
             .background(Color.backgroundDeep)
         }
-        .navigationBarTitle("提示音", displayMode: .inline)
+        .navigationBarTitle(AppLocalization.text("settings.sound_picker.title"), displayMode: .inline)
         .preferredColorScheme(.dark)
         .task {
             do {
                 try settingsStore.load(from: modelContext)
             } catch {
-                errorMessage = "无法加载提示音设置。"
+                errorMessage = AppLocalization.text("settings.sound_picker.load_failed")
             }
         }
-        .alert("无法保存设置", isPresented: errorAlertBinding) {
-            Button("确定", role: .cancel) {}
+        .alert(AppLocalization.text("settings.save_failed.title"), isPresented: errorAlertBinding) {
+            Button(AppLocalization.text("common.ok"), role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "请稍后重试。")
+            Text(errorMessage ?? AppLocalization.text("common.try_again_later"))
         }
     }
 
@@ -239,11 +239,11 @@ struct PrivacyPolicyView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.md) {
-                    Text("隐私政策")
+                    Text(AppLocalization.text("privacy.title"))
                         .font(.appTitle)
                         .foregroundColor(.textPrimary)
                     
-                    Text("本应用尊重并保护所有使用服务的用户隐私权...")
+                    Text(AppLocalization.text("privacy.body"))
                         .font(.appBody)
                         .foregroundColor(.textSecondary)
                         .lineSpacing(4)
@@ -251,7 +251,7 @@ struct PrivacyPolicyView: View {
                 .padding(Spacing.md)
             }
         }
-        .navigationBarTitle("隐私政策", displayMode: .inline)
+        .navigationBarTitle(AppLocalization.text("privacy.title"), displayMode: .inline)
         .preferredColorScheme(.dark)
     }
 }

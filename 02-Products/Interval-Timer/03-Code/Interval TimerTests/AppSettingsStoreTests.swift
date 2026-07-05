@@ -46,7 +46,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertFalse(store.soundEnabled)
         XCTAssertFalse(store.vibrationEnabled)
         XCTAssertFalse(store.screenAlwaysOn)
-        XCTAssertEqual(store.selectedSound, "叮叮叮")
+        XCTAssertEqual(store.selectedSound, AppSound.chime.identifier)
         XCTAssertEqual(store.lastProgramID, programID)
     }
 
@@ -68,12 +68,12 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertFalse(store.soundEnabled)
         XCTAssertFalse(store.vibrationEnabled)
         XCTAssertFalse(store.screenAlwaysOn)
-        XCTAssertEqual(store.selectedSound, "嘟嘟嘟")
+        XCTAssertEqual(store.selectedSound, AppSound.tone.identifier)
         XCTAssertEqual(store.lastProgramID, programID)
         XCTAssertFalse(persistedSettings[0].soundEnabled)
         XCTAssertFalse(persistedSettings[0].vibrationEnabled)
         XCTAssertFalse(persistedSettings[0].screenAlwaysOn)
-        XCTAssertEqual(persistedSettings[0].selectedSound, "嘟嘟嘟")
+        XCTAssertEqual(persistedSettings[0].selectedSound, AppSound.tone.identifier)
         XCTAssertEqual(persistedSettings[0].lastProgramID, programID)
     }
 
@@ -112,8 +112,24 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertTrue(store.soundEnabled)
         XCTAssertTrue(store.vibrationEnabled)
         XCTAssertTrue(store.screenAlwaysOn)
-        XCTAssertEqual(store.selectedSound, "嘟嘟嘟")
+        XCTAssertEqual(store.selectedSound, AppSound.tone.identifier)
         XCTAssertEqual(store.lastProgramID, newerID)
+    }
+
+    func testLoadNormalizesLegacyPersistedSoundValueToStableIdentifier() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let store = AppSettingsStore()
+        let settings = AppSettings(selectedSound: "叮叮叮")
+
+        context.insert(settings)
+        try context.save()
+
+        try store.load(from: context)
+
+        let persistedSettings = try context.fetch(FetchDescriptor<AppSettings>())
+        XCTAssertEqual(store.selectedSound, AppSound.chime.identifier)
+        XCTAssertEqual(persistedSettings.first?.selectedSound, AppSound.chime.identifier)
     }
 
     private func makeContainer() throws -> ModelContainer {

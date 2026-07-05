@@ -49,7 +49,7 @@ final class AppSettingsStore: ObservableObject {
 
     func setSelectedSound(_ value: String, in context: ModelContext) throws {
         let settings = try fetchOrCreateSettings(in: context)
-        settings.selectedSound = value
+        settings.selectedSound = AppSound.normalizedIdentifier(for: value)
         try context.save()
         apply(settings)
     }
@@ -63,21 +63,21 @@ final class AppSettingsStore: ObservableObject {
 
     private func fetchOrCreateSettings(in context: ModelContext) throws -> AppSettings {
         if let persistedSettings {
+            try normalizeSelectedSoundIfNeeded(for: persistedSettings, in: context)
             return persistedSettings
         }
 
-        var descriptor = FetchDescriptor<AppSettings>()
-        descriptor.sortBy = [SortDescriptor(\.createdAt, order: .reverse), SortDescriptor(\.id)]
-        let settings = try context.fetch(descriptor)
+        let settings = try context.fetch(FetchDescriptor<AppSettings>())
 
-        if let canonicalSettings = settings.first {
+        if let canonicalSettings = settings.max(by: canonicalSortComparator) {
             if settings.count > 1 {
-                for duplicate in settings.dropFirst() {
+                for duplicate in settings where duplicate.id != canonicalSettings.id {
                     context.delete(duplicate)
                 }
                 try context.save()
             }
 
+            try normalizeSelectedSoundIfNeeded(for: canonicalSettings, in: context)
             persistedSettings = canonicalSettings
             return canonicalSettings
         }
@@ -89,12 +89,28 @@ final class AppSettingsStore: ObservableObject {
         return defaultSettings
     }
 
+    private func canonicalSortComparator(_ lhs: AppSettings, _ rhs: AppSettings) -> Bool {
+        if lhs.createdAt != rhs.createdAt {
+            return lhs.createdAt < rhs.createdAt
+        }
+
+        return lhs.id.uuidString < rhs.id.uuidString
+    }
+
     private func apply(_ settings: AppSettings) {
         persistedSettings = settings
         soundEnabled = settings.soundEnabled
         vibrationEnabled = settings.vibrationEnabled
         screenAlwaysOn = settings.screenAlwaysOn
-        selectedSound = settings.selectedSound
+        selectedSound = AppSound.normalizedIdentifier(for: settings.selectedSound)
         lastProgramID = settings.lastProgramID
+    }
+
+    private func normalizeSelectedSoundIfNeeded(for settings: AppSettings, in context: ModelContext) throws {
+        let normalizedSound = AppSound.normalizedIdentifier(for: settings.selectedSound)
+        guard settings.selectedSound != normalizedSound else { return }
+
+        settings.selectedSound = normalizedSound
+        try context.save()
     }
 }

@@ -105,7 +105,7 @@ final class TimerManager: ObservableObject {
         soundEnabled = settings.soundEnabled
         vibrationEnabled = settings.vibrationEnabled
         screenAlwaysOn = settings.screenAlwaysOn
-        selectedSound = settings.selectedSound
+        selectedSound = AppSound.normalizedIdentifier(for: settings.selectedSound)
         updateIdleTimerState()
     }
     
@@ -336,14 +336,12 @@ final class TimerManager: ObservableObject {
     }
 
     private var selectedSoundID: SystemSoundID {
-        switch selectedSound {
-        case "Bell":
+        switch AppSound(rawValue: AppSound.normalizedIdentifier(for: selectedSound)) ?? .beep {
+        case .beep:
             return 1013
-        case "嘟嘟嘟":
+        case .tone:
             return 1012
-        case "叮叮叮":
-            return 1005
-        default:
+        case .chime:
             return 1005
         }
     }
