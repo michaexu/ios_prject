@@ -1,0 +1,101 @@
+# Fastlane 配置 - Interval Timer
+
+# 安装 Fastlane: sudo gem install fastlane -N
+
+default_platform(:ios)
+
+platform :ios do
+  desc "推送 Beta 版本到 TestFlight"
+  lane :beta do
+    # 1. 增加构建版本号
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1
+    )
+    
+    # 2. 运行测试
+    run_tests(
+      scheme: "IntervalTimer",
+      device: "iPhone 15 Pro"
+    )
+    
+    # 3. 构建并签名
+    gym(
+      scheme: "IntervalTimer",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.yourcompany.intervaltimer" => "IntervalTimer Distribution Profile"
+        }
+      }
+    )
+    
+    # 4. 上传到 TestFlight
+    pilot(
+      ipa: "IntervalTimer.ipa",
+      skip_waiting_for_build_processing: true
+    )
+    
+    # 5. 提交版本说明
+    pilot(
+      changelog: "Bug 修复和性能优化",
+      distribute_external: true,
+      groups: ["Beta 测试组"]
+    )
+  end
+
+  desc "发布正式版本到 App Store"
+  lane :release do
+    # 1. 运行测试
+    run_tests(
+      scheme: "IntervalTimer",
+      device: "iPhone 15 Pro"
+    )
+    
+    # 2. 构建并签名
+    gym(
+      scheme: "IntervalTimer",
+      export_method: "app-store"
+    )
+    
+    # 3. 上传到 App Store
+    deliver(
+      ipa: "IntervalTimer.ipa",
+      force: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: true
+    )
+  end
+
+  desc "运行单元测试"
+  lane :test do
+    run_tests(
+      scheme: "IntervalTimer",
+      device: "iPhone 15 Pro",
+      only_testing: ["IntervalTimerTests"]
+    )
+  end
+
+  desc "截图（用于 App Store）"
+  lane :screenshots do
+    capture_screenshots(
+      scheme: "IntervalTimer",
+      devices: ["iPhone 8 Plus", "iPhone 11 Pro Max", "iPhone 12 Pro Max"]
+    )
+    
+    upload_to_app_store(
+      force: true,
+      skip_binary_upload: true,
+      skip_metadata: true
+    )
+  end
+
+  desc "更新元数据（无需重新上传二进制文件）"
+  lane :metadata do
+    deliver(
+      force: true,
+      skip_binary_upload: true,
+      skip_screenshots: true
+    )
+  end
+end
